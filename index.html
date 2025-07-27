@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kor Project</title>
+  <title>Kor Web</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -14,20 +14,17 @@
       flex-direction: column;
       height: 100vh;
     }
-
     header {
       padding: 1rem;
       background-color: #1a1a1a;
-      border-bottom: 1px solid #333;
       text-align: center;
+      border-bottom: 1px solid #333;
     }
-
     header h1 {
       margin: 0;
       font-size: 1.5rem;
       color: #2f80ed;
     }
-
     #form {
       display: flex;
       justify-content: center;
@@ -37,10 +34,9 @@
       border-bottom: 1px solid #333;
       flex-wrap: wrap;
     }
-
     input[type="text"] {
       flex: 1;
-      max-width: 400px;
+      max-width: 500px;
       padding: 0.6rem;
       border-radius: 8px;
       border: none;
@@ -48,7 +44,6 @@
       color: #fff;
       font-size: 1rem;
     }
-
     button {
       padding: 0.6rem 1.2rem;
       border: none;
@@ -57,13 +52,10 @@
       color: white;
       font-size: 1rem;
       cursor: pointer;
-      transition: background 0.2s ease;
     }
-
     button:hover {
       background-color: #1366d6;
     }
-
     #loading {
       text-align: center;
       padding: 0.7rem;
@@ -72,7 +64,6 @@
       background-color: #1a1a1a;
       font-size: 0.95rem;
     }
-
     iframe {
       flex-grow: 1;
       width: 100%;
@@ -86,13 +77,12 @@
   </header>
 
   <form id="form">
-    <input id="urlInput" type="text" placeholder="https://example.com" required />
+    <input id="urlInput" type="text" placeholder="URLまたは検索語句を入力" required />
     <button type="submit">開く</button>
     <button type="button" id="reloadBtn">🔄 リロード</button>
   </form>
 
-  <div id="loading">🔄 サーバーを起動中です... 少々お待ちください。</div>
-
+  <div id="loading">🔄 読み込み中...</div>
   <iframe id="viewer" src=""></iframe>
 
   <script>
@@ -104,11 +94,26 @@
 
     let lastUrl = "";
 
+    function isLikelyUrl(text) {
+      return /^(https?:\/\/)?[a-z0-9\-]+\.[a-z]{2,}.*$/i.test(text);
+    }
+
     form.addEventListener("submit", (e) => {
       e.preventDefault();
-      const url = encodeURIComponent(urlInput.value.trim());
-      lastUrl = url;
-      viewer.src = `https://kor-render-server.onrender.com/proxy?url=${url}`;
+      const input = urlInput.value.trim();
+
+      let finalUrl = "";
+      if (isLikelyUrl(input)) {
+        // 明確なURLなら補完してアクセス
+        finalUrl = input.startsWith("http") ? input : "https://" + input;
+      } else {
+        // 検索語句 → Bing検索
+        finalUrl = `https://www.bing.com/search?q=${encodeURIComponent(input)}`;
+      }
+
+      const proxied = `https://kor-render-server.onrender.com/proxy?url=${encodeURIComponent(finalUrl)}`;
+      lastUrl = proxied;
+      viewer.src = proxied;
       loading.style.display = "block";
     });
 
@@ -118,7 +123,7 @@
 
     reloadBtn.addEventListener("click", () => {
       if (lastUrl) {
-        viewer.src = `https://kor-render-server.onrender.com/proxy?url=${lastUrl}`;
+        viewer.src = lastUrl;
         loading.style.display = "block";
       }
     });
