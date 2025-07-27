@@ -35,11 +35,12 @@
       padding: 1rem;
       background-color: #121212;
       border-bottom: 1px solid #333;
+      flex-wrap: wrap;
     }
 
     input[type="text"] {
       flex: 1;
-      max-width: 500px;
+      max-width: 400px;
       padding: 0.6rem;
       border-radius: 8px;
       border: none;
@@ -87,6 +88,7 @@
   <form id="form">
     <input id="urlInput" type="text" placeholder="https://example.com" required />
     <button type="submit">開く</button>
+    <button type="button" id="reloadBtn">🔄 リロード</button>
   </form>
 
   <div id="loading">🔄 サーバーを起動中です... 少々お待ちください。</div>
@@ -98,10 +100,14 @@
     const urlInput = document.getElementById("urlInput");
     const viewer = document.getElementById("viewer");
     const loading = document.getElementById("loading");
+    const reloadBtn = document.getElementById("reloadBtn");
+
+    let lastUrl = "";
 
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       const url = encodeURIComponent(urlInput.value.trim());
+      lastUrl = url;
       viewer.src = `https://kor-render-server.onrender.com/proxy?url=${url}`;
       loading.style.display = "block";
     });
@@ -109,7 +115,14 @@
     viewer.addEventListener("load", () => {
       loading.style.display = "none";
     });
-    
+
+    reloadBtn.addEventListener("click", () => {
+      if (lastUrl) {
+        viewer.src = `https://kor-render-server.onrender.com/proxy?url=${lastUrl}`;
+        loading.style.display = "block";
+      }
+    });
+
   </script>
 </body>
 </html>
