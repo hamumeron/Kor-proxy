@@ -123,6 +123,10 @@
       }
     });
 
+    // Renderスリープ防止ping（5分おき）
+    setInterval(() => {
+      fetch("https://kor-render-server.onrender.com/ping").catch(() => {});
+    }, 5 * 60 * 1000);
   </script>
 </body>
 </html>
