@@ -9,10 +9,10 @@
       font-family: 'Segoe UI', sans-serif;
       margin: 0;
       background-color: #0f0f0f;
-      color: #ffffff;
+      color: #fff;
+      height: 100vh;
       display: flex;
       flex-direction: column;
-      height: 100vh;
     }
     header {
       padding: 1rem;
@@ -25,13 +25,21 @@
       font-size: 1.5rem;
       color: #2f80ed;
     }
+    #searchContainer {
+      overflow: hidden;
+      max-height: 200px;
+      transition: max-height 0.5s ease-in-out;
+      background-color: #121212;
+      border-bottom: 1px solid #333;
+    }
+    #searchContainer.collapsed {
+      max-height: 0;
+    }
     #form {
       display: flex;
       justify-content: center;
       gap: 0.5rem;
       padding: 1rem;
-      background-color: #121212;
-      border-bottom: 1px solid #333;
       flex-wrap: wrap;
     }
     input[type="text"] {
@@ -76,11 +84,13 @@
     <h1>🌐 Kor Web</h1>
   </header>
 
-  <form id="form">
-    <input id="urlInput" type="text" placeholder="URLまたは検索語句を入力" required />
-    <button type="submit">開く</button>
-    <button type="button" id="reloadBtn">🔄 リロード</button>
-  </form>
+  <div id="searchContainer">
+    <form id="form">
+      <input id="urlInput" type="text" placeholder="URLまたは検索語句を入力" required />
+      <button type="submit">開く</button>
+      <button type="button" id="reloadBtn">🔄 リロード</button>
+    </form>
+  </div>
 
   <div id="loading">🔄 読み込み中...</div>
   <iframe id="viewer" src=""></iframe>
@@ -91,6 +101,7 @@
     const viewer = document.getElementById("viewer");
     const loading = document.getElementById("loading");
     const reloadBtn = document.getElementById("reloadBtn");
+    const searchContainer = document.getElementById("searchContainer");
 
     let lastUrl = "";
 
@@ -101,13 +112,11 @@
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       const input = urlInput.value.trim();
-
       let finalUrl = "";
+
       if (isLikelyUrl(input)) {
-        // 明確なURLなら補完してアクセス
         finalUrl = input.startsWith("http") ? input : "https://" + input;
       } else {
-        // 日本語Bing検索へリダイレクト
         finalUrl = `https://www.bing.com/search?q=${encodeURIComponent(input)}&setlang=ja&cc=JP`;
       }
 
@@ -115,6 +124,7 @@
       lastUrl = proxied;
       viewer.src = proxied;
       loading.style.display = "block";
+      searchContainer.classList.add("collapsed");  // 検索バーを閉じる
     });
 
     viewer.addEventListener("load", () => {
@@ -128,7 +138,12 @@
       }
     });
 
-    // Renderスリープ防止ping（5分おき）
+    // iframe hoverで検索バー再表示
+    viewer.addEventListener("mouseenter", () => {
+      searchContainer.classList.remove("collapsed");
+    });
+
+    // 定期PingでRenderスリープ防止
     setInterval(() => {
       fetch("https://kor-render-server.onrender.com/ping").catch(() => {});
     }, 5 * 60 * 1000);
