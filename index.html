@@ -5,24 +5,111 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Kor Project</title>
   <style>
-    body { font-family: sans-serif; text-align: center; padding: 2em; }
-    iframe { width: 100%; height: 80vh; border: none; margin-top: 1em; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background-color: #0f0f0f;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    header {
+      padding: 1rem;
+      background-color: #1a1a1a;
+      border-bottom: 1px solid #333;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: #2f80ed;
+    }
+
+    #form {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 1rem;
+      background-color: #121212;
+      border-bottom: 1px solid #333;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      max-width: 500px;
+      padding: 0.6rem;
+      border-radius: 8px;
+      border: none;
+      background-color: #222;
+      color: #fff;
+      font-size: 1rem;
+    }
+
+    button {
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: 8px;
+      background-color: #2f80ed;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #1366d6;
+    }
+
+    #loading {
+      text-align: center;
+      padding: 0.7rem;
+      color: #aaa;
+      display: none;
+      background-color: #1a1a1a;
+      font-size: 0.95rem;
+    }
+
+    iframe {
+      flex-grow: 1;
+      width: 100%;
+      border: none;
+    }
   </style>
 </head>
 <body>
-  <h1>Kor Web</h1>
+  <header>
+    <h1>🌐 Kor Web</h1>
+  </header>
+
   <form id="form">
-    <input id="urlInput" type="text" placeholder="URLを入力" size="40" required />
+    <input id="urlInput" type="text" placeholder="https://example.com" required />
     <button type="submit">開く</button>
   </form>
+
+  <div id="loading">🔄 サーバーを起動中です... 少々お待ちください。</div>
+
   <iframe id="viewer" src=""></iframe>
 
   <script>
-    document.getElementById("form").addEventListener("submit", (e) => {
+    const form = document.getElementById("form");
+    const urlInput = document.getElementById("urlInput");
+    const viewer = document.getElementById("viewer");
+    const loading = document.getElementById("loading");
+
+    form.addEventListener("submit", (e) => {
       e.preventDefault();
-      const url = encodeURIComponent(document.getElementById("urlInput").value);
-      document.getElementById("viewer").src = `https://kor-render-server.onrender.com/proxy?url=${url}`;
+      const url = encodeURIComponent(urlInput.value.trim());
+      viewer.src = `https://kor-render-server.onrender.com/proxy?url=${url}`;
+      loading.style.display = "block";
     });
+
+    viewer.addEventListener("load", () => {
+      loading.style.display = "none";
+    });
+    
   </script>
 </body>
 </html>
