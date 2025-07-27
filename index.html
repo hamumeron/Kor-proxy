@@ -107,8 +107,8 @@
         // 明確なURLなら補完してアクセス
         finalUrl = input.startsWith("http") ? input : "https://" + input;
       } else {
-        // 検索語句 → Bing検索
-        finalUrl = `https://www.bing.com/search?q=${encodeURIComponent(input)}`;
+        // 日本語Bing検索へリダイレクト
+        finalUrl = `https://www.bing.com/search?q=${encodeURIComponent(input)}&setlang=ja&cc=JP`;
       }
 
       const proxied = `https://kor-render-server.onrender.com/proxy?url=${encodeURIComponent(finalUrl)}`;
