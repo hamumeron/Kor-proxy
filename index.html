@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kor Project</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 2em; }
+    iframe { width: 100%; height: 80vh; border: none; margin-top: 1em; }
+  </style>
+</head>
+<body>
+  <h1>Kor Web</h1>
+  <form id="form">
+    <input id="urlInput" type="text" placeholder="URLを入力" size="40" required />
+    <button type="submit">開く</button>
+  </form>
+  <iframe id="viewer" src=""></iframe>
+
+  <script>
+    document.getElementById("form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const url = encodeURIComponent(document.getElementById("urlInput").value);
+      document.getElementById("viewer").src = `https://あなたのrenderドメイン.onrender.com/proxy?url=${url}`;
+    });
+  </script>
+</body>
+</html>
