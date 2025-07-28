@@ -81,18 +81,18 @@
 </head>
 <body>
   <header>
-    <h1>🌐 Kor Web</h1>
+    <h1>Kor Web</h1>
   </header>
 
   <div id="searchContainer">
     <form id="form">
       <input id="urlInput" type="text" placeholder="URLまたは検索語句を入力" required />
       <button type="submit">開く</button>
-      <button type="button" id="reloadBtn">🔄 リロード</button>
+      <button type="button" id="reloadBtn">リロード</button>
     </form>
   </div>
 
-  <div id="loading">🔄 読み込み中...</div>
+  <div id="loading"> 読み込み中...</div>
   <iframe id="viewer" src=""></iframe>
 
   <script>
@@ -138,7 +138,6 @@
       }
     });
 
-    // iframe hoverで検索バー再表示
     viewer.addEventListener("mouseenter", () => {
       searchContainer.classList.remove("collapsed");
     });
