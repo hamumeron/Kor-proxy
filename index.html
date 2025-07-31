@@ -5,36 +5,64 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Kor Web</title>
   <style>
+    :root {
+      --bg-color: #0f0f0f;
+      --fg-color: #ffffff;
+      --input-bg: #222;
+      --accent: #2f80ed;
+    }
+
+    body.light {
+      --bg-color: #ffffff;
+      --fg-color: #000000;
+      --input-bg: #f2f2f2;
+    }
+
     body {
       font-family: 'Segoe UI', sans-serif;
       margin: 0;
-      background-color: #0f0f0f;
-      color: #fff;
+      background-color: var(--bg-color);
+      color: var(--fg-color);
       height: 100vh;
       display: flex;
       flex-direction: column;
     }
+
     header {
       padding: 1rem;
-      background-color: #1a1a1a;
-      text-align: center;
+      background-color: var(--input-bg);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       border-bottom: 1px solid #333;
     }
+
     header h1 {
       margin: 0;
       font-size: 1.5rem;
-      color: #2f80ed;
+      color: var(--accent);
     }
+
+    #settingsBtn {
+      background: none;
+      color: var(--fg-color);
+      border: none;
+      font-size: 1.3rem;
+      cursor: pointer;
+    }
+
     #searchContainer {
       overflow: hidden;
       max-height: 200px;
       transition: max-height 0.5s ease-in-out;
-      background-color: #121212;
+      background-color: var(--input-bg);
       border-bottom: 1px solid #333;
     }
+
     #searchContainer.collapsed {
       max-height: 0;
     }
+
     #form {
       display: flex;
       justify-content: center;
@@ -42,47 +70,86 @@
       padding: 1rem;
       flex-wrap: wrap;
     }
+
     input[type="text"] {
       flex: 1;
       max-width: 500px;
       padding: 0.6rem;
       border-radius: 8px;
       border: none;
-      background-color: #222;
-      color: #fff;
+      background-color: var(--input-bg);
+      color: var(--fg-color);
       font-size: 1rem;
     }
+
     button {
       padding: 0.6rem 1.2rem;
       border: none;
       border-radius: 8px;
-      background-color: #2f80ed;
+      background-color: var(--accent);
       color: white;
       font-size: 1rem;
       cursor: pointer;
     }
-    button:hover {
-      background-color: #1366d6;
-    }
+
     #loading {
       text-align: center;
       padding: 0.7rem;
-      color: #aaa;
+      color: gray;
       display: none;
-      background-color: #1a1a1a;
+      background-color: var(--input-bg);
       font-size: 0.95rem;
     }
+
     iframe {
       flex-grow: 1;
       width: 100%;
       border: none;
     }
+
+    /* --- 設定ポップアップ --- */
+    #settingsPopup {
+      display: none;
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      background-color: var(--input-bg);
+      border: 1px solid #444;
+      padding: 1rem;
+      border-radius: 12px;
+      z-index: 1000;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      min-width: 260px;
+    }
+
+    #settingsPopup label, #settingsPopup select {
+      display: block;
+      margin: 0.5rem 0;
+      color: var(--fg-color);
+    }
   </style>
 </head>
 <body>
   <header>
-    <h1>Kor Web</h1>
+    <h1>🌐 Kor Web</h1>
+    <button id="settingsBtn">⚙️</button>
   </header>
+
+  <div id="settingsPopup">
+    <label>テーマ:</label>
+    <select id="themeSelect">
+      <option value="dark">ダーク</option>
+      <option value="light">ライト</option>
+    </select>
+
+    <label>プロキシサーバー:</label>
+    <select id="serverSelect">
+      <option value="https://kor-render-server.onrender.com">サーバー1</option>
+      <option value="https://kor-render-server-1.onrender.com">サーバー2</option>
+      <option value="https://kor-render-server-2.onrender.com">サーバー3</option>
+      <option value="https://kor-render-server-3.onrender.com">サーバー4</option>
+    </select>
+  </div>
 
   <div id="searchContainer">
     <form id="form">
@@ -96,14 +163,23 @@
   <iframe id="viewer" src=""></iframe>
 
   <script>
-    const form = document.getElementById("form");
-    const urlInput = document.getElementById("urlInput");
     const viewer = document.getElementById("viewer");
     const loading = document.getElementById("loading");
+    const form = document.getElementById("form");
+    const urlInput = document.getElementById("urlInput");
     const reloadBtn = document.getElementById("reloadBtn");
+    const settingsBtn = document.getElementById("settingsBtn");
+    const settingsPopup = document.getElementById("settingsPopup");
+    const themeSelect = document.getElementById("themeSelect");
+    const serverSelect = document.getElementById("serverSelect");
     const searchContainer = document.getElementById("searchContainer");
 
     let lastUrl = "";
+    let proxyServer = localStorage.getItem("proxyServer") || serverSelect.value;
+
+    function applyTheme(theme) {
+      document.body.classList.toggle("light", theme === "light");
+    }
 
     function isLikelyUrl(text) {
       return /^(https?:\/\/)?[a-z0-9\-]+\.[a-z]{2,}.*$/i.test(text);
@@ -120,15 +196,11 @@
         finalUrl = `https://www.bing.com/search?q=${encodeURIComponent(input)}&setlang=ja&cc=JP`;
       }
 
-      const proxied = `https://kor-render-server.onrender.com/proxy?url=${encodeURIComponent(finalUrl)}`;
+      const proxied = `${proxyServer}/proxy?url=${encodeURIComponent(finalUrl)}`;
       lastUrl = proxied;
       viewer.src = proxied;
       loading.style.display = "block";
-      searchContainer.classList.add("collapsed");  // 検索バーを閉じる
-    });
-
-    viewer.addEventListener("load", () => {
-      loading.style.display = "none";
+      searchContainer.classList.add("collapsed");
     });
 
     reloadBtn.addEventListener("click", () => {
@@ -138,13 +210,40 @@
       }
     });
 
+    viewer.addEventListener("load", () => {
+      loading.style.display = "none";
+    });
+
     viewer.addEventListener("mouseenter", () => {
       searchContainer.classList.remove("collapsed");
     });
 
-    // 定期PingでRenderスリープ防止
+    settingsBtn.addEventListener("click", () => {
+      settingsPopup.style.display = settingsPopup.style.display === "block" ? "none" : "block";
+    });
+
+    themeSelect.addEventListener("change", () => {
+      const theme = themeSelect.value;
+      applyTheme(theme);
+      localStorage.setItem("theme", theme);
+    });
+
+    serverSelect.addEventListener("change", () => {
+      proxyServer = serverSelect.value;
+      localStorage.setItem("proxyServer", proxyServer);
+    });
+
+    window.addEventListener("load", () => {
+      const savedTheme = localStorage.getItem("theme") || "dark";
+      const savedServer = localStorage.getItem("proxyServer") || serverSelect.value;
+      themeSelect.value = savedTheme;
+      serverSelect.value = savedServer;
+      proxyServer = savedServer;
+      applyTheme(savedTheme);
+    });
+
     setInterval(() => {
-      fetch("https://kor-render-server.onrender.com/ping").catch(() => {});
+      fetch(`${proxyServer}/ping`).catch(() => {});
     }, 5 * 60 * 1000);
   </script>
 </body>
