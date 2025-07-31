@@ -107,7 +107,6 @@
       border: none;
     }
 
-    /* --- 設定ポップアップ --- */
     #settingsPopup {
       display: none;
       position: fixed;
@@ -122,17 +121,47 @@
       min-width: 260px;
     }
 
-    #settingsPopup label, #settingsPopup select {
+    #settingsPopup label,
+    #settingsPopup select {
       display: block;
       margin: 0.5rem 0;
       color: var(--fg-color);
+    }
+
+    #historyPopup {
+      position: fixed;
+      top: 80px;
+      left: 20px;
+      background-color: var(--input-bg);
+      border: 1px solid #444;
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      z-index: 1000;
+      max-height: 300px;
+      overflow-y: auto;
+      display: none;
+    }
+
+    .history-item {
+      padding: 0.3rem 0;
+      border-bottom: 1px solid #333;
+      cursor: pointer;
+      color: var(--fg-color);
+    }
+
+    .history-item:hover {
+      color: var(--accent);
     }
   </style>
 </head>
 <body>
   <header>
     <h1>🌐 Kor Web</h1>
-    <button id="settingsBtn">⚙️</button>
+    <div>
+      <button id="settingsBtn">⚙️</button>
+      <button id="historyBtn">📜</button>
+    </div>
   </header>
 
   <div id="settingsPopup">
@@ -149,17 +178,26 @@
       <option value="https://kor-render-server-2.onrender.com">サーバー3</option>
       <option value="https://kor-render-server-3.onrender.com">サーバー4</option>
     </select>
+
+    <label>検索エンジン:</label>
+    <select id="engineSelect">
+      <option value="bing">Bing</option>
+      <option value="google">Google</option>
+      <option value="duckduckgo">DuckDuckGo</option>
+    </select>
   </div>
+
+  <div id="historyPopup"></div>
 
   <div id="searchContainer">
     <form id="form">
       <input id="urlInput" type="text" placeholder="URLまたは検索語句を入力" required />
       <button type="submit">開く</button>
-      <button type="button" id="reloadBtn">リロード</button>
+      <button type="button" id="reloadBtn">🔄</button>
     </form>
   </div>
 
-  <div id="loading"> 読み込み中...</div>
+  <div id="loading">🔄 読み込み中...</div>
   <iframe id="viewer" src=""></iframe>
 
   <script>
@@ -172,35 +210,72 @@
     const settingsPopup = document.getElementById("settingsPopup");
     const themeSelect = document.getElementById("themeSelect");
     const serverSelect = document.getElementById("serverSelect");
+    const engineSelect = document.getElementById("engineSelect");
     const searchContainer = document.getElementById("searchContainer");
+    const historyBtn = document.getElementById("historyBtn");
+    const historyPopup = document.getElementById("historyPopup");
 
     let lastUrl = "";
     let proxyServer = localStorage.getItem("proxyServer") || serverSelect.value;
+    let searchEngine = localStorage.getItem("searchEngine") || "bing";
 
     function applyTheme(theme) {
       document.body.classList.toggle("light", theme === "light");
     }
 
     function isLikelyUrl(text) {
-      return /^(https?:\/\/)?[a-z0-9\-]+\.[a-z]{2,}.*$/i.test(text);
+      return /^(https?:\/\/)?[a-z0-9\-]+\.[a-z]{2,}/i.test(text);
+    }
+
+    function getSearchUrl(query, engine) {
+      const encoded = encodeURIComponent(query);
+      switch (engine) {
+        case "google":
+          return `https://www.google.com/search?q=${encoded}&hl=ja&gl=jp`;
+        case "duckduckgo":
+          return `https://duckduckgo.com/?q=${encoded}&kl=jp-ja`;
+        default:
+          return `https://www.bing.com/search?q=${encoded}&setlang=ja&cc=JP`;
+      }
+    }
+
+    function saveHistory(input) {
+      let history = JSON.parse(localStorage.getItem("searchHistory") || "[]");
+      history.unshift(input);
+      history = [...new Set(history)].slice(0, 20); // 重複削除・最大20件
+      localStorage.setItem("searchHistory", JSON.stringify(history));
+    }
+
+    function renderHistory() {
+      const history = JSON.parse(localStorage.getItem("searchHistory") || "[]");
+      historyPopup.innerHTML = "";
+      history.forEach(item => {
+        const div = document.createElement("div");
+        div.textContent = item;
+        div.className = "history-item";
+        div.onclick = () => {
+          urlInput.value = item;
+          historyPopup.style.display = "none";
+        };
+        historyPopup.appendChild(div);
+      });
     }
 
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       const input = urlInput.value.trim();
-      let finalUrl = "";
-
-      if (isLikelyUrl(input)) {
-        finalUrl = input.startsWith("http") ? input : "https://" + input;
-      } else {
-        finalUrl = `https://www.bing.com/search?q=${encodeURIComponent(input)}&setlang=ja&cc=JP`;
-      }
+      if (!input) return;
+      let finalUrl = isLikelyUrl(input)
+        ? input.startsWith("http") ? input : "https://" + input
+        : getSearchUrl(input, searchEngine);
 
       const proxied = `${proxyServer}/proxy?url=${encodeURIComponent(finalUrl)}`;
       lastUrl = proxied;
       viewer.src = proxied;
       loading.style.display = "block";
       searchContainer.classList.add("collapsed");
+
+      saveHistory(input);
     });
 
     reloadBtn.addEventListener("click", () => {
@@ -233,12 +308,25 @@
       localStorage.setItem("proxyServer", proxyServer);
     });
 
+    engineSelect.addEventListener("change", () => {
+      searchEngine = engineSelect.value;
+      localStorage.setItem("searchEngine", searchEngine);
+    });
+
+    historyBtn.addEventListener("click", () => {
+      renderHistory();
+      historyPopup.style.display = historyPopup.style.display === "block" ? "none" : "block";
+    });
+
     window.addEventListener("load", () => {
       const savedTheme = localStorage.getItem("theme") || "dark";
       const savedServer = localStorage.getItem("proxyServer") || serverSelect.value;
+      const savedEngine = localStorage.getItem("searchEngine") || "bing";
       themeSelect.value = savedTheme;
       serverSelect.value = savedServer;
+      engineSelect.value = savedEngine;
       proxyServer = savedServer;
+      searchEngine = savedEngine;
       applyTheme(savedTheme);
     });
 
