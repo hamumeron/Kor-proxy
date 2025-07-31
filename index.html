@@ -1,338 +1,479 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kor Web</title>
-  <style>
-    :root {
-      --bg-color: #0f0f0f;
-      --fg-color: #ffffff;
-      --input-bg: #222;
-      --accent: #2f80ed;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Kor Web</title>
+<style>
+  :root {
+    --color-bg-dark: #121212;
+    --color-bg-light: #fafafa;
+    --color-primary: #2962ff;
+    --color-primary-light: #538dff;
+    --color-primary-dark: #0039cb;
+    --color-surface-dark: #1e1e1e;
+    --color-surface-light: #ffffff;
+    --color-text-dark: #e0e0e0;
+    --color-text-light: #202124;
+    --color-error: #d32f2f;
 
-    body.light {
-      --bg-color: #ffffff;
-      --fg-color: #000000;
-      --input-bg: #f2f2f2;
-    }
+    --radius: 12px;
+    --transition: 0.3s ease;
+    --shadow-light: 0 4px 8px rgba(0,0,0,0.1);
+    --shadow-dark: 0 4px 12px rgba(0,0,0,0.4);
+  }
 
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      background-color: var(--bg-color);
-      color: var(--fg-color);
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--color-bg-dark);
+    color: var(--color-text-dark);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    transition: background-color var(--transition), color var(--transition);
+  }
 
+  body.light {
+    background-color: var(--color-bg-light);
+    color: var(--color-text-light);
+  }
+
+  header {
+    background-color: var(--color-surface-dark);
+    padding: 1rem 2rem;
+    box-shadow: var(--shadow-dark);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom-left-radius: var(--radius);
+    border-bottom-right-radius: var(--radius);
+    transition: background-color var(--transition), box-shadow var(--transition);
+  }
+
+  body.light header {
+    background-color: var(--color-surface-light);
+    box-shadow: var(--shadow-light);
+  }
+
+  header h1 {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.8rem;
+    color: var(--color-primary);
+    user-select: none;
+  }
+
+  #settingsBtn, #historyBtn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    margin-left: 1rem;
+    cursor: pointer;
+    color: inherit;
+    transition: color var(--transition);
+  }
+  #settingsBtn:hover, #historyBtn:hover {
+    color: var(--color-primary-light);
+  }
+
+  #searchContainer {
+    background-color: var(--color-surface-dark);
+    margin: 1rem 2rem;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-dark);
+    padding: 1rem 1.5rem;
+    max-height: 300px;
+    overflow: hidden;
+    transition: max-height 0.5s ease-in-out, box-shadow var(--transition);
+  }
+  body.light #searchContainer {
+    background-color: var(--color-surface-light);
+    box-shadow: var(--shadow-light);
+  }
+  #searchContainer.collapsed {
+    max-height: 0;
+    padding: 0 1.5rem;
+    box-shadow: none;
+  }
+
+  #form {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  input[type="text"] {
+    flex: 1 1 400px;
+    min-width: 200px;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius);
+    border: 1.5px solid transparent;
+    background-color: var(--color-bg-dark);
+    color: var(--color-text-dark);
+    font-size: 1rem;
+    transition: background-color var(--transition), border-color var(--transition), color var(--transition);
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+  }
+  input[type="text"]:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    background-color: var(--color-surface-dark);
+    box-shadow: 0 0 8px var(--color-primary);
+    color: var(--color-text-dark);
+  }
+  body.light input[type="text"] {
+    background-color: var(--color-bg-light);
+    color: var(--color-text-light);
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
+  }
+  body.light input[type="text"]:focus {
+    background-color: var(--color-surface-light);
+    color: var(--color-text-light);
+  }
+
+  button {
+    background-color: var(--color-primary);
+    border: none;
+    color: white;
+    font-weight: 600;
+    border-radius: var(--radius);
+    padding: 0.75rem 1.4rem;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color var(--transition), box-shadow var(--transition);
+    box-shadow: var(--shadow-light);
+  }
+  button:hover {
+    background-color: var(--color-primary-dark);
+    box-shadow: 0 0 10px var(--color-primary-dark);
+  }
+  button:active {
+    background-color: var(--color-primary-light);
+  }
+
+  #reloadBtn {
+    background-color: #555;
+    box-shadow: var(--shadow-light);
+  }
+  #reloadBtn:hover {
+    background-color: #333;
+    box-shadow: 0 0 8px #333;
+  }
+  body.light #reloadBtn {
+    background-color: #ddd;
+    color: var(--color-text-light);
+  }
+  body.light #reloadBtn:hover {
+    background-color: #bbb;
+  }
+
+  #loading {
+    text-align: center;
+    font-size: 1rem;
+    color: var(--color-primary);
+    padding: 1rem 0;
+    user-select: none;
+  }
+
+  iframe {
+    flex-grow: 1;
+    width: 100%;
+    border: none;
+    border-radius: 0 0 var(--radius) var(--radius);
+    box-shadow: var(--shadow-dark);
+    transition: box-shadow var(--transition);
+  }
+  body.light iframe {
+    box-shadow: var(--shadow-light);
+  }
+
+  #settingsPopup, #historyPopup {
+    position: fixed;
+    top: 70px;
+    right: 2rem;
+    background-color: var(--color-surface-dark);
+    border-radius: var(--radius);
+    padding: 1rem 1.5rem;
+    box-shadow: var(--shadow-dark);
+    z-index: 1100;
+    min-width: 280px;
+    max-height: 350px;
+    overflow-y: auto;
+    transition: background-color var(--transition), box-shadow var(--transition);
+  }
+  body.light #settingsPopup, body.light #historyPopup {
+    background-color: var(--color-surface-light);
+    box-shadow: var(--shadow-light);
+  }
+  #historyPopup {
+    right: auto;
+    left: 2rem;
+  }
+
+  #settingsPopup label, #settingsPopup select {
+    display: block;
+    margin: 0.5rem 0 0.8rem;
+    color: inherit;
+    font-weight: 600;
+  }
+  #settingsPopup select {
+    width: 100%;
+    padding: 0.4rem 0.6rem;
+    border-radius: var(--radius);
+    border: 1.5px solid transparent;
+    background-color: var(--color-bg-dark);
+    color: var(--color-text-dark);
+    transition: background-color var(--transition), border-color var(--transition), color var(--transition);
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+    cursor: pointer;
+  }
+  #settingsPopup select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    background-color: var(--color-surface-dark);
+    box-shadow: 0 0 8px var(--color-primary);
+  }
+  body.light #settingsPopup select {
+    background-color: var(--color-bg-light);
+    color: var(--color-text-light);
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
+  }
+  body.light #settingsPopup select:focus {
+    background-color: var(--color-surface-light);
+    color: var(--color-text-light);
+  }
+
+  .history-item {
+    padding: 0.4rem 0.6rem;
+    border-radius: var(--radius);
+    margin-bottom: 0.4rem;
+    background-color: transparent;
+    color: inherit;
+    cursor: pointer;
+    transition: background-color var(--transition), color var(--transition);
+    user-select: none;
+  }
+  .history-item:hover {
+    background-color: var(--color-primary);
+    color: white;
+  }
+
+  /* Responsive */
+  @media (max-width: 600px) {
     header {
+      flex-direction: column;
+      gap: 0.6rem;
       padding: 1rem;
-      background-color: var(--input-bg);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid #333;
     }
-
-    header h1 {
-      margin: 0;
-      font-size: 1.5rem;
-      color: var(--accent);
-    }
-
-    #settingsBtn {
-      background: none;
-      color: var(--fg-color);
-      border: none;
-      font-size: 1.3rem;
-      cursor: pointer;
-    }
-
     #searchContainer {
-      overflow: hidden;
-      max-height: 200px;
-      transition: max-height 0.5s ease-in-out;
-      background-color: var(--input-bg);
-      border-bottom: 1px solid #333;
+      margin: 1rem 1rem 0 1rem;
     }
-
-    #searchContainer.collapsed {
-      max-height: 0;
-    }
-
     #form {
-      display: flex;
-      justify-content: center;
-      gap: 0.5rem;
-      padding: 1rem;
-      flex-wrap: wrap;
+      flex-direction: column;
+      gap: 0.8rem;
     }
-
     input[type="text"] {
-      flex: 1;
-      max-width: 500px;
-      padding: 0.6rem;
-      border-radius: 8px;
-      border: none;
-      background-color: var(--input-bg);
-      color: var(--fg-color);
-      font-size: 1rem;
+      max-width: 100%;
     }
-
-    button {
-      padding: 0.6rem 1.2rem;
-      border: none;
-      border-radius: 8px;
-      background-color: var(--accent);
-      color: white;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-
-    #loading {
-      text-align: center;
-      padding: 0.7rem;
-      color: gray;
-      display: none;
-      background-color: var(--input-bg);
-      font-size: 0.95rem;
-    }
-
-    iframe {
-      flex-grow: 1;
-      width: 100%;
-      border: none;
-    }
-
-    #settingsPopup {
-      display: none;
-      position: fixed;
-      top: 80px;
-      right: 20px;
-      background-color: var(--input-bg);
-      border: 1px solid #444;
-      padding: 1rem;
-      border-radius: 12px;
-      z-index: 1000;
-      box-shadow: 0 0 10px rgba(0,0,0,0.3);
-      min-width: 260px;
-    }
-
-    #settingsPopup label,
-    #settingsPopup select {
-      display: block;
-      margin: 0.5rem 0;
-      color: var(--fg-color);
-    }
-
-    #historyPopup {
-      position: fixed;
-      top: 80px;
-      left: 20px;
-      background-color: var(--input-bg);
-      border: 1px solid #444;
-      border-radius: 12px;
-      padding: 1rem;
-      box-shadow: 0 0 10px rgba(0,0,0,0.3);
-      z-index: 1000;
+    #settingsPopup, #historyPopup {
+      top: 60px;
+      right: 1rem;
+      left: 1rem;
+      min-width: auto;
+      max-width: 100%;
       max-height: 300px;
-      overflow-y: auto;
-      display: none;
     }
-
-    .history-item {
-      padding: 0.3rem 0;
-      border-bottom: 1px solid #333;
-      cursor: pointer;
-      color: var(--fg-color);
-    }
-
-    .history-item:hover {
-      color: var(--accent);
-    }
-  </style>
+  }
+</style>
 </head>
 <body>
-  <header>
-    <h1>🌐 Kor Web</h1>
-    <div>
-      <button id="settingsBtn">⚙️</button>
-      <button id="historyBtn">📜</button>
-    </div>
-  </header>
-
-  <div id="settingsPopup">
-    <label>テーマ:</label>
-    <select id="themeSelect">
-      <option value="dark">ダーク</option>
-      <option value="light">ライト</option>
-    </select>
-
-    <label>プロキシサーバー:</label>
-    <select id="serverSelect">
-      <option value="https://kor-render-server.onrender.com">サーバー1</option>
-      <option value="https://kor-render-server-1.onrender.com">サーバー2</option>
-      <option value="https://kor-render-server-2.onrender.com">サーバー3</option>
-      <option value="https://kor-render-server-3.onrender.com">サーバー4</option>
-    </select>
-
-    <label>検索エンジン:</label>
-    <select id="engineSelect">
-      <option value="bing">Bing</option>
-      <option value="google">Google</option>
-      <option value="duckduckgo">DuckDuckGo</option>
-    </select>
+<header>
+  <h1>🌐 Kor Web</h1>
+  <div>
+    <button id="settingsBtn" aria-label="設定">⚙️</button>
+    <button id="historyBtn" aria-label="履歴">📜</button>
   </div>
+</header>
 
-  <div id="historyPopup"></div>
+<div id="settingsPopup" style="display:none">
+  <label for="themeSelect">テーマ:</label>
+  <select id="themeSelect" aria-label="テーマ選択">
+    <option value="dark">ダーク</option>
+    <option value="light">ライト</option>
+  </select>
 
-  <div id="searchContainer">
-    <form id="form">
-      <input id="urlInput" type="text" placeholder="URLまたは検索語句を入力" required />
-      <button type="submit">開く</button>
-      <button type="button" id="reloadBtn">🔄</button>
-    </form>
-  </div>
+  <label for="serverSelect">プロキシサーバー:</label>
+  <select id="serverSelect" aria-label="プロキシサーバー選択">
+    <option value="https://kor-render-server.onrender.com">サーバー1</option>
+    <option value="https://kor-render-server-1.onrender.com">サーバー2</option>
+    <option value="https://kor-render-server-2.onrender.com">サーバー3</option>
+    <option value="https://kor-render-server-3.onrender.com">サーバー4</option>
+  </select>
 
-  <div id="loading">🔄 読み込み中...</div>
-  <iframe id="viewer" src=""></iframe>
+  <label for="engineSelect">検索エンジン:</label>
+  <select id="engineSelect" aria-label="検索エンジン選択">
+    <option value="bing">Bing</option>
+    <option value="google">Google</option>
+    <option value="duckduckgo">DuckDuckGo</option>
+  </select>
+</div>
 
-  <script>
-    const viewer = document.getElementById("viewer");
-    const loading = document.getElementById("loading");
-    const form = document.getElementById("form");
-    const urlInput = document.getElementById("urlInput");
-    const reloadBtn = document.getElementById("reloadBtn");
-    const settingsBtn = document.getElementById("settingsBtn");
-    const settingsPopup = document.getElementById("settingsPopup");
-    const themeSelect = document.getElementById("themeSelect");
-    const serverSelect = document.getElementById("serverSelect");
-    const engineSelect = document.getElementById("engineSelect");
-    const searchContainer = document.getElementById("searchContainer");
-    const historyBtn = document.getElementById("historyBtn");
-    const historyPopup = document.getElementById("historyPopup");
+<div id="historyPopup" style="display:none"></div>
 
-    let lastUrl = "";
-    let proxyServer = localStorage.getItem("proxyServer") || serverSelect.value;
-    let searchEngine = localStorage.getItem("searchEngine") || "bing";
+<div id="searchContainer">
+  <form id="form" autocomplete="off" novalidate>
+    <input id="urlInput" type="text" placeholder="URLまたは検索語句を入力" required aria-label="検索またはURL入力" />
+    <button type="submit" aria-label="開く">開く</button>
+    <button type="button" id="reloadBtn" aria-label="リロード">🔄</button>
+  </form>
+</div>
 
-    function applyTheme(theme) {
-      document.body.classList.toggle("light", theme === "light");
+<div id="loading" aria-live="polite" role="status" style="display:none">🔄 読み込み中...</div>
+
+<iframe id="viewer" src="" title="プロキシ閲覧領域" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>
+
+<script>
+  const viewer = document.getElementById("viewer");
+  const loading = document.getElementById("loading");
+  const form = document.getElementById("form");
+  const urlInput = document.getElementById("urlInput");
+  const reloadBtn = document.getElementById("reloadBtn");
+  const settingsBtn = document.getElementById("settingsBtn");
+  const settingsPopup = document.getElementById("settingsPopup");
+  const themeSelect = document.getElementById("themeSelect");
+  const serverSelect = document.getElementById("serverSelect");
+  const engineSelect = document.getElementById("engineSelect");
+  const searchContainer = document.getElementById("searchContainer");
+  const historyBtn = document.getElementById("historyBtn");
+  const historyPopup = document.getElementById("historyPopup");
+
+  let lastUrl = "";
+  let proxyServer = localStorage.getItem("proxyServer") || serverSelect.value;
+  let searchEngine = localStorage.getItem("searchEngine") || "bing";
+
+  function applyTheme(theme) {
+    document.body.classList.toggle("light", theme === "light");
+  }
+
+  function isLikelyUrl(text) {
+    return /^(https?:\/\/)?[a-z0-9\-]+\.[a-z]{2,}/i.test(text);
+  }
+
+  function getSearchUrl(query, engine) {
+    const encoded = encodeURIComponent(query);
+    switch (engine) {
+      case "google":
+        return `https://www.google.com/search?q=${encoded}&hl=ja&gl=jp`;
+      case "duckduckgo":
+        return `https://duckduckgo.com/?q=${encoded}&kl=jp-ja`;
+      default:
+        return `https://www.bing.com/search?q=${encoded}&setlang=ja&cc=JP`;
     }
+  }
 
-    function isLikelyUrl(text) {
-      return /^(https?:\/\/)?[a-z0-9\-]+\.[a-z]{2,}/i.test(text);
-    }
+  function saveHistory(input) {
+    let history = JSON.parse(localStorage.getItem("searchHistory") || "[]");
+    history.unshift(input);
+    history = [...new Set(history)].slice(0, 20); // 重複削除・最大20件
+    localStorage.setItem("searchHistory", JSON.stringify(history));
+  }
 
-    function getSearchUrl(query, engine) {
-      const encoded = encodeURIComponent(query);
-      switch (engine) {
-        case "google":
-          return `https://www.google.com/search?q=${encoded}&hl=ja&gl=jp`;
-        case "duckduckgo":
-          return `https://duckduckgo.com/?q=${encoded}&kl=jp-ja`;
-        default:
-          return `https://www.bing.com/search?q=${encoded}&setlang=ja&cc=JP`;
+  function renderHistory() {
+    const history = JSON.parse(localStorage.getItem("searchHistory") || "[]");
+    historyPopup.innerHTML = "";
+    history.forEach(item => {
+      const div = document.createElement("div");
+      div.textContent = item;
+      div.className = "history-item";
+      div.tabIndex = 0;
+      div.onclick = () => {
+        urlInput.value = item;
+        historyPopup.style.display = "none";
+      };
+      div.onkeypress = (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          div.click();
+        }
       }
-    }
+      historyPopup.appendChild(div);
+    });
+  }
 
-    function saveHistory(input) {
-      let history = JSON.parse(localStorage.getItem("searchHistory") || "[]");
-      history.unshift(input);
-      history = [...new Set(history)].slice(0, 20); // 重複削除・最大20件
-      localStorage.setItem("searchHistory", JSON.stringify(history));
-    }
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const input = urlInput.value.trim();
+    if (!input) return;
+    let finalUrl = isLikelyUrl(input)
+      ? input.startsWith("http") ? input : "https://" + input
+      : getSearchUrl(input, searchEngine);
 
-    function renderHistory() {
-      const history = JSON.parse(localStorage.getItem("searchHistory") || "[]");
-      historyPopup.innerHTML = "";
-      history.forEach(item => {
-        const div = document.createElement("div");
-        div.textContent = item;
-        div.className = "history-item";
-        div.onclick = () => {
-          urlInput.value = item;
-          historyPopup.style.display = "none";
-        };
-        historyPopup.appendChild(div);
-      });
-    }
+    const proxied = `${proxyServer}/proxy?url=${encodeURIComponent(finalUrl)}`;
+    lastUrl = proxied;
+    viewer.src = proxied;
+    loading.style.display = "block";
+    searchContainer.classList.add("collapsed");
 
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const input = urlInput.value.trim();
-      if (!input) return;
-      let finalUrl = isLikelyUrl(input)
-        ? input.startsWith("http") ? input : "https://" + input
-        : getSearchUrl(input, searchEngine);
+    saveHistory(input);
+  });
 
-      const proxied = `${proxyServer}/proxy?url=${encodeURIComponent(finalUrl)}`;
-      lastUrl = proxied;
-      viewer.src = proxied;
+  reloadBtn.addEventListener("click", () => {
+    if (lastUrl) {
+      viewer.src = lastUrl;
       loading.style.display = "block";
-      searchContainer.classList.add("collapsed");
+    }
+  });
 
-      saveHistory(input);
-    });
+  viewer.addEventListener("load", () => {
+    loading.style.display = "none";
+  });
 
-    reloadBtn.addEventListener("click", () => {
-      if (lastUrl) {
-        viewer.src = lastUrl;
-        loading.style.display = "block";
-      }
-    });
+  viewer.addEventListener("mouseenter", () => {
+    searchContainer.classList.remove("collapsed");
+  });
 
-    viewer.addEventListener("load", () => {
-      loading.style.display = "none";
-    });
+  settingsBtn.addEventListener("click", () => {
+    settingsPopup.style.display = settingsPopup.style.display === "block" ? "none" : "block";
+  });
 
-    viewer.addEventListener("mouseenter", () => {
-      searchContainer.classList.remove("collapsed");
-    });
+  themeSelect.addEventListener("change", () => {
+    const theme = themeSelect.value;
+    applyTheme(theme);
+    localStorage.setItem("theme", theme);
+  });
 
-    settingsBtn.addEventListener("click", () => {
-      settingsPopup.style.display = settingsPopup.style.display === "block" ? "none" : "block";
-    });
+  serverSelect.addEventListener("change", () => {
+    proxyServer = serverSelect.value;
+    localStorage.setItem("proxyServer", proxyServer);
+  });
 
-    themeSelect.addEventListener("change", () => {
-      const theme = themeSelect.value;
-      applyTheme(theme);
-      localStorage.setItem("theme", theme);
-    });
+  engineSelect.addEventListener("change", () => {
+    searchEngine = engineSelect.value;
+    localStorage.setItem("searchEngine", searchEngine);
+  });
 
-    serverSelect.addEventListener("change", () => {
-      proxyServer = serverSelect.value;
-      localStorage.setItem("proxyServer", proxyServer);
-    });
+  historyBtn.addEventListener("click", () => {
+    renderHistory();
+    historyPopup.style.display = historyPopup.style.display === "block" ? "none" : "block";
+  });
 
-    engineSelect.addEventListener("change", () => {
-      searchEngine = engineSelect.value;
-      localStorage.setItem("searchEngine", searchEngine);
-    });
+  window.addEventListener("load", () => {
+    const savedTheme = localStorage.getItem("theme") || "dark";
+    const savedServer = localStorage.getItem("proxyServer") || serverSelect.value;
+    const savedEngine = localStorage.getItem("searchEngine") || "bing";
+    themeSelect.value = savedTheme;
+    serverSelect.value = savedServer;
+    engineSelect.value = savedEngine;
+    proxyServer = savedServer;
+    searchEngine = savedEngine;
+    applyTheme(savedTheme);
+  });
 
-    historyBtn.addEventListener("click", () => {
-      renderHistory();
-      historyPopup.style.display = historyPopup.style.display === "block" ? "none" : "block";
-    });
-
-    window.addEventListener("load", () => {
-      const savedTheme = localStorage.getItem("theme") || "dark";
-      const savedServer = localStorage.getItem("proxyServer") || serverSelect.value;
-      const savedEngine = localStorage.getItem("searchEngine") || "bing";
-      themeSelect.value = savedTheme;
-      serverSelect.value = savedServer;
-      engineSelect.value = savedEngine;
-      proxyServer = savedServer;
-      searchEngine = savedEngine;
-      applyTheme(savedTheme);
-    });
-
-    setInterval(() => {
-      fetch(`${proxyServer}/ping`).catch(() => {});
-    }, 5 * 60 * 1000);
-  </script>
+  setInterval(() => {
+    fetch(`${proxyServer}/ping`).catch(() => {});
+  }, 5 * 60 * 1000);
+</script>
 </body>
 </html>
